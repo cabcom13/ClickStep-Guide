@@ -1,6 +1,6 @@
-# AutoGuide Pro
+# ClickStep Guide
 
-**AutoGuide Pro** is a high-performance, professional documentation and screen recording system designed for creating high-quality, step-by-step instructions and guides. With a Photoshop-style non-destructive editor, it allows for seamless annotation, blurring, and magnification of screen captures.
+**ClickStep Guide** is a high-performance, professional documentation and screen recording system designed for creating high-quality, step-by-step instructions and guides. With a Photoshop-style non-destructive editor, it allows for seamless annotation, blurring, and magnification of screen captures.
 
 ## 🚀 Key Features
 
@@ -28,8 +28,8 @@
 
 1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
-   cd autoguide-pro
+   git clone https://github.com/cabcom13/ClickStep-Guide.git
+   cd ClickStep-Guide
    ```
 
 2. **Set up a virtual environment**:
@@ -52,7 +52,7 @@ python pro_recorder.py
 
 ## 🎨 Design Philosophy
 
-AutoGuide Pro aims for a **premium aesthetic** and **intuitive UX**. The editor provides a powerful workspace reminiscent of professional design software while remaining specialized for documentation tasks.
+ClickStep Guide aims for a **premium aesthetic** and **intuitive UX**. The editor provides a powerful workspace reminiscent of professional design software while remaining specialized for documentation tasks.
 
 ---
 

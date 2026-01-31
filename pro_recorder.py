@@ -715,7 +715,7 @@ class ProEditor(QMainWindow):
     def __init__(self, steps, globals, crop, save_cb, parent_window=None):
         super().__init__()
         self.recorder_window = parent_window
-        self.setWindowTitle("AutoGuide Pro Editor - Photoshop Style")
+        self.setWindowTitle("ClickStep Guide Editor - Photoshop Style")
         self.resize(1600, 1000)
         self.setStyleSheet(self.get_stylesheet())
         
@@ -743,7 +743,7 @@ class ProEditor(QMainWindow):
         self.setup_ui()
         
         # Subtle Branding Footer
-        self.statusBar().showMessage("AutoGuide Pro Engine | Professionelles Dokumentations-System Enabled")
+        self.statusBar().showMessage("ClickStep Guide Pro Engine | Professionelles Dokumentations-System Enabled")
         self.statusBar().setStyleSheet("color: #555; background: #1a1a1b; border-top: 1px solid #333;")
         
         if self.steps:
@@ -1120,7 +1120,7 @@ class ProEditor(QMainWindow):
             if not ok or not new_name: return
             name = new_name
             self.current_project_name = name
-            self.setWindowTitle(f"AutoGuide Pro - {name}")
+            self.setWindowTitle(f"ClickStep Guide - {name}")
         
         base_path = os.path.join(os.getcwd(), "projects", name)
         img_path = os.path.join(base_path, "images")
@@ -1649,7 +1649,7 @@ class ProEditor(QMainWindow):
                 self.scene.addItem(item)
         
         # 3. Hardcoded Watermark (Non-Deletable) - Added once per step
-        watermark = QGraphicsTextItem("Created with AutoGuide Pro")
+        watermark = QGraphicsTextItem("Created with ClickStep Guide")
         watermark.setDefaultTextColor(QColor(150, 150, 150, 120))
         wm_font = QFont("Segoe UI", 10)
         watermark.setFont(wm_font)
@@ -1707,7 +1707,7 @@ class RecordingThread(QThread):
 class ProRecorder(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("AutoGuide Pro")
+        self.setWindowTitle("ClickStep Guide")
         self.resize(1280, 800)
         self.setStyleSheet("""
             QMainWindow { background-color: #121212; }
@@ -1824,7 +1824,7 @@ class ProRecorder(QMainWindow):
         self.layout.addStretch() # Bottom spacer
         
         # Attribution Footer
-        footer = QLabel("© 2026 AutoGuide Pro | High-Performance Documentation Engine")
+        footer = QLabel("© 2026 ClickStep Guide | High-Performance Documentation Engine")
         footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
         footer.setStyleSheet("color: #333; font-size: 11px; margin-top: 20px; border-top: 1px solid #1a1a1a; padding-top: 10px;")
         self.layout.addWidget(footer)
@@ -1877,7 +1877,7 @@ class ProRecorder(QMainWindow):
         
         try:
             doc = Document()
-            doc.add_heading('AutoGuide Pro - Anleitung', 0).alignment = WD_ALIGN_PARAGRAPH.CENTER
+            doc.add_heading('ClickStep Guide - Anleitung', 0).alignment = WD_ALIGN_PARAGRAPH.CENTER
             
             for i, s in enumerate(steps):
                 # 1. Prepare Base Image (Crop)
@@ -1925,7 +1925,7 @@ class ProRecorder(QMainWindow):
             doc.add_heading('Über dieses Dokument', level=1)
             p = doc.add_paragraph()
             p.add_run('Diese Anleitung wurde professionell erstellt mit ').italic = True
-            p.add_run('AutoGuide Pro').bold = True
+            p.add_run('ClickStep Guide').bold = True
             p.add_run('.')
             doc.add_paragraph(f"Erstellungsdatum: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}")
             doc.add_paragraph("© 2026 AutoGuide Automationsysteme")
@@ -1978,7 +1978,7 @@ class ProRecorder(QMainWindow):
     def render_watermark_cv2(self, img):
         """Draw a permanent watermark in the bottom right corner"""
         h, w = img.shape[:2]
-        text = "Created with AutoGuide Pro"
+        text = "Created with ClickStep Guide"
         font = cv2.FONT_HERSHEY_SIMPLEX
         scale = 0.6
         thickness = 1
