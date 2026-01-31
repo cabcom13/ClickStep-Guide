@@ -607,7 +607,10 @@ class EditorScene(QGraphicsScene):
         if self.draw_start and self.editor.draw_mode in ['blur', 'global_blur', 'zoom', 'crop']:
             # Live preview
             if self.preview_item:
-                self.removeItem(self.preview_item)
+                try:
+                    self.removeItem(self.preview_item)
+                except RuntimeError:
+                    self.preview_item = None
             
             rect = QRectF(self.draw_start, event.scenePos()).normalized()
             colors = {
@@ -651,6 +654,15 @@ class EditorScene(QGraphicsScene):
                     self.editor.global_crop = (int(rect.left()), int(rect.top()), 
                                              int(rect.right()), int(rect.bottom()))
                     
+                    # Prevent further preview updates during reload
+                    self.draw_start = None
+                    if self.preview_item:
+                        try:
+                            self.removeItem(self.preview_item)
+                        except RuntimeError:
+                            pass
+                        self.preview_item = None
+
                     # Reload current step with crop applied
                     self.editor.load_step(self.editor.current_idx)
                     
