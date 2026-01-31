@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+build/
+dist/
+*.spec
+
+# Media & Data
+recordings/
+projects/
+*.mp4
+*.mkv
+*.png
+!logo.png
+
+# IDEs
+.vscode/
+.idea/
+.agent/
+
+# Logs
+*.log

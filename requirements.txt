@@ -1,0 +1,6 @@
+PyQt6
+pynput
+pillow
+opencv-python
+numpy
+python-docx
