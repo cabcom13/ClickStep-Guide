@@ -167,6 +167,11 @@ class ResizableRectItem(QGraphicsRectItem):
         self.selected_handle = None
         super().mouseReleaseEvent(event)
 
+    def boundingRect(self):
+        r = self.rect()
+        margin = self.handle_size
+        return r.adjusted(-margin, -margin, margin, margin)
+
     def paint(self, painter, option, widget):
         super().paint(painter, option, widget)
         
@@ -186,8 +191,10 @@ class BlurItem(ResizableRectItem):
         self.item_type = 'blur'
         self.bg_pixmap = bg_pixmap
         self.blurred_cache = None
+        self.last_pos = None
+        self.last_rect = None
         self.uid = uid if uid else str(uuid.uuid4())
-        # Disable caching to prevent artifacts during movement
+        # CacheMode disabled because we handle it manually
         self.setCacheMode(QGraphicsItem.CacheMode.NoCache)
     
     def itemChange(self, change, value):
@@ -202,31 +209,45 @@ class BlurItem(ResizableRectItem):
             r = self.rect().toRect()
             pos = self.scenePos()
             
-            # Extract region from background
-            source_rect = QRect(int(pos.x() + r.x()), int(pos.y() + r.y()), r.width(), r.height())
+            # Check cache validity
+            should_update = (
+                self.blurred_cache is None or
+                pos != self.last_pos or
+                r != self.last_rect
+            )
             
-            # Ensure within bounds
-            if source_rect.intersects(QRect(0, 0, self.bg_pixmap.width(), self.bg_pixmap.height())):
-                cropped = self.bg_pixmap.copy(source_rect)
+            if should_update:
+                # Extract region from background
+                source_rect = QRect(int(pos.x() + r.x()), int(pos.y() + r.y()), r.width(), r.height())
                 
-                # Convert to QImage for blur
-                img = cropped.toImage()
-                if not img.isNull():
-                    # Convert to numpy for OpenCV blur
-                    width, height = img.width(), img.height()
-                    ptr = img.bits()
-                    ptr.setsize(height * width * 4)
-                    arr = np.frombuffer(ptr, np.uint8).reshape((height, width, 4))
+                # Ensure within bounds
+                if source_rect.intersects(QRect(0, 0, self.bg_pixmap.width(), self.bg_pixmap.height())):
+                    cropped = self.bg_pixmap.copy(source_rect)
                     
-                    # Apply Gaussian Blur
-                    blurred = cv2.GaussianBlur(arr, (75, 75), 40)
-                    
-                    # Convert back to QImage
-                    qimg = QImage(blurred.data, width, height, width * 4, QImage.Format.Format_RGBA8888)
-                    blurred_pixmap = QPixmap.fromImage(qimg)
-                    
-                    # Draw blurred content
-                    painter.drawPixmap(r, blurred_pixmap)
+                    # Convert to QImage for blur
+                    img = cropped.toImage()
+                    if not img.isNull():
+                        # Convert to numpy for OpenCV blur
+                        width, height = img.width(), img.height()
+                        ptr = img.bits()
+                        ptr.setsize(height * width * 4)
+                        arr = np.frombuffer(ptr, np.uint8).reshape((height, width, 4))
+
+                        # Apply Gaussian Blur
+                        blurred = cv2.GaussianBlur(arr, (75, 75), 40)
+
+                        # Convert back to QImage
+                        qimg = QImage(blurred.data, width, height, width * 4, QImage.Format.Format_RGBA8888)
+                        self.blurred_cache = QPixmap.fromImage(qimg)
+                        self.last_pos = pos
+                        self.last_rect = r
+                    else:
+                        self.blurred_cache = None
+                else:
+                    self.blurred_cache = None
+
+            if self.blurred_cache:
+                painter.drawPixmap(r, self.blurred_cache)
         
         # Draw border
         color = QColor(0, 255, 0) if self.is_global else QColor(255, 255, 255)
@@ -259,6 +280,10 @@ class ZoomItem(QGraphicsItem):
         self.handle_size = 10
         self.selected_handle = None
         
+        self.cached_zoom = None
+        self.last_box_rect = None
+        self.last_target = None
+
         self.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsMovable | 
                      QGraphicsItem.GraphicsItemFlag.ItemIsSelectable |
                      QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges)
@@ -359,16 +384,24 @@ class ZoomItem(QGraphicsItem):
         
         # 3. Draw Magnified Content (if pixmap available)
         if self.pixmap:
-            # Crop area around target
-            src_sz = self.box_rect.width() / 2
-            crop_rect = QRectF(self.target.x()-src_sz/2, self.target.y()-src_sz/2, src_sz, src_sz)
-            
-            # Simple magnification logic
-            cropped = self.pixmap.copy(crop_rect.toRect())
-            scaled = cropped.scaled(self.box_rect.size().toSize(), 
-                                  Qt.AspectRatioMode.KeepAspectRatio, 
-                                  Qt.TransformationMode.SmoothTransformation)
-            painter.drawPixmap(self.box_rect.toRect(), scaled)
+            if (self.cached_zoom is None or
+                self.box_rect != self.last_box_rect or
+                self.target != self.last_target):
+
+                # Crop area around target
+                src_sz = self.box_rect.width() / 2
+                crop_rect = QRectF(self.target.x()-src_sz/2, self.target.y()-src_sz/2, src_sz, src_sz)
+
+                # Simple magnification logic
+                cropped = self.pixmap.copy(crop_rect.toRect())
+                self.cached_zoom = cropped.scaled(self.box_rect.size().toSize(),
+                                      Qt.AspectRatioMode.KeepAspectRatio,
+                                      Qt.TransformationMode.SmoothTransformation)
+                self.last_box_rect = self.box_rect
+                self.last_target = self.target
+
+            if self.cached_zoom:
+                painter.drawPixmap(self.box_rect.toRect(), self.cached_zoom)
             
             # Draw marker in zoom
             painter.setPen(QPen(QColor(255, 0, 0), 2))
@@ -402,13 +435,19 @@ class EditableTextItem(QGraphicsTextItem):
         self.resize_start_pos = None
         self.initial_font_size = 0
 
+    def boundingRect(self):
+        r = super().boundingRect()
+        # Add space for handle at bottom right
+        margin = self.handle_size
+        return r.adjusted(0, 0, margin, margin)
+
     def paint(self, painter, option, widget):
         super().paint(painter, option, widget)
         if self.isSelected():
             # Draw resize handle (bottom right)
             painter.setBrush(QBrush(QColor(0, 175, 255)))
             painter.setPen(QPen(Qt.GlobalColor.white, 1))
-            r = self.boundingRect()
+            r = super().boundingRect() # Use original rect for handle position
             painter.drawEllipse(r.bottomRight(), self.handle_size/2, self.handle_size/2)
 
     def hoverMoveEvent(self, event):
@@ -736,8 +775,8 @@ class ProEditor(QMainWindow):
         self.view.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         self.view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
         self.view.setBackgroundBrush(QBrush(QColor("#0d0d0d")))
-        # Use FullViewportUpdate to prevent smearing/artifacts during zoom/panning
-        self.view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
+        # Use SmartViewportUpdate for better performance; artifacts handled by correct boundingRect
+        self.view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.SmartViewportUpdate)
         
         self.setCentralWidget(self.view)
         self.setup_ui()
