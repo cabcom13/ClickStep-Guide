@@ -1,0 +1,38 @@
+🚀 Feature-Liste: ClickStep Guide (Professional Edition)
+1. Intelligente Automatisierung:
+
+Auto-Capture: Jeder Mausklick wird automatisch erkannt, verzögerungsfrei erfasst und als neuer Schritt gespeichert.
+Dynamic Overlay: Ein modernes "Pillen-Design" im Stil einer Dynamic Island zeigt dir während der Aufnahme in Echtzeit den Status und die Anzahl der erfassten Schritte.
+Capture-Invisibility: Das Aufnahme-Overlay ist für seine eigenen Screenshots unsichtbar (via Windows API), sodass die Bilder immer sauber bleiben.
+2. Professionelle Bildbearbeitung & Annotations:
+
+Klick-Marker: Automatische rote Marker an der Klick-Position. Global anpassbar in Größe, Farbe, Schriftart und Leuchteffekt.
+Smart InfoBoxes: Hochgradig anpassbare Textboxen mit intelligenten Pfeilspitzen. Frei wählbare Hintergrundfarben (inkl. Transparenz), Randstärken, Ecken-Abrundung und präzise Textausrichtung (Horizontal & Vertikal).
+Vergrößerung (Magnifier): Lupe-Effekt, um wichtige Details hervorzuheben.
+Fokus-Tool (Spotlight): Dimmt den Hintergrund ab und setzt einen "Lichtkegel" (Rechteck oder Ellipse) auf den relevanten Bereich.
+Datenschutz (Blur): Standard-Blur für sensible Bereiche oder Global-Blur für den gesamten Hintergrund.
+Grafische Elemente: Flexible Pfeile und eine Bibliothek aus modernen Icons (Segoe UI Symbol Integration).
+3. Workflow & UX:
+
+Non-Destructive Editing: Alle Elemente (Pfeile, Marker, Boxen) können jederzeit verschoben, skaliert oder gelöscht werden.
+Globale Layer: Einmal platzierte Elemente (wie Logos oder allgemeine Hinweise) können über alle Schritte eines Guides hinweg synchronisiert werden.
+Professioneller Editor: Dunkles, aufgeräumtes High-End UI mit Undo/Redo-Funktion, Ebenen-Liste und Echtzeit-Eigenschaften-Panel.
+📝 Entwurf für einen LinkedIn-Post
+Headline: Schluss mit mühsamer Dokumentation! 🚀
+
+Habt ihr auch genug davon, für jede Software-Anleitung hunderte Screenshots manuell zu machen und mühsam in Paint Pfeile zu malen?
+
+Ich habe in den letzten Tagen an einem Tool gearbeitet, das diesen Prozess komplett revolutioniert: ClickStep Guide.
+
+Was es kann? ✅ Aufnahme auf Knopfdruck: Klick einfach durch deine Software – das Tool macht den Rest. ✅ Intelligente Annotations: Automatische Klick-Marker und hochgradig anpassbare Info-Boxen. ✅ Professioneller Fokus: Mit Spotlight-Effekten und Lupen-Tools lenkst du den Blick sofort auf das Wesentliche. ✅ Datenschutz inklusive: Verpixle sensible Daten direkt im Editor mit einem Klick.
+
+Das Ziel: Innerhalb von Minuten statt Stunden eine glasklare, professionelle Dokumentation erstellen, die nach High-End aussieht.
+
+Vom automatischen "Dynamic Island"-Status-Overlay bis hin zu globalen Layern für konsistentes Branding – der ClickStep Guide ist mein neuer Daily Driver für Guides.
+
+Wie erstellt ihr eure Dokumentationen? Lasst es mich in den Kommentaren wissen! 👇
+
+#SoftwareDevelopment #ProductivityTools #Documentation #UXDesign #PyQt6 #Automation #ClickStepGuide
+
+Profi-Tipp für den Post:
+Hänge am besten das Bild vom neuen Dynamic Island Overlay (dem REC-Pille-Design) und einen Screenshot einer fertig bearbeiteten InfoBox mit abgerundeten Ecken und dem Spotlight-Effekt an. Das zeigt sofort den "Professional Look"!

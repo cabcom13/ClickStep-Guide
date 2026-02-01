@@ -1,0 +1,135 @@
+# Instructions for Klickmarker Settings Integration
+# ====================================================
+
+# STEP 1: Add the ClickMarkerItem update to line 919-1003
+
+# Replace the __init__ method of ClickMarkerItem (line 921-937):
+def __init__(self, x, y, number, color=None):
+    super().__init__()
+    self.item_type = 'click'
+    self.center_x = x
+    self.center_y = y
+    self.number = number
+    
+    # Get global settings
+    self.settings = ClickMarkerSettings()
+    self.marker_color = color if color else self.settings.color
+    
+    # Use settings for dimensions
+    self.radius = self.settings.size
+    self.rect_size = self.radius * 2.5
+    
+    self.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsMovable | 
+                 QGraphicsItem.GraphicsItemFlag.ItemIsSelectable |
+                 QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges)
+    self.setCursor(Qt.CursorShape.SizeAllCursor)
+    self.setCacheMode(QGraphicsItem.CacheMode.NoCache)
+
+# Replace the boundingRect method (line 939-940):
+def boundingRect(self):
+    half = self.rect_size / 2
+    return QRectF(self.center_x - half, self.center_y - half, self.rect_size, self.rect_size)
+
+# Replace the itemChange method (line 942-958) - remove comments:
+def itemChange(self, change, value):
+    if change == QGraphicsItem.GraphicsItemChange.ItemPositionHasChanged:
+        if self.scene():
+            center_point = self.sceneBoundingRect().center()
+            for item in self.scene().items():
+                if hasattr(item, 'item_type') and item.item_type == 'zoom':
+                    item.target = center_point
+                    item.prepareGeometryChange()
+                    item.update()
+    return super().itemChange(change, value)
+
+# Replace the paint method (line 960-1003) - remove all comments:
+def paint(self, painter, option, widget):
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    
+    c = QPointF(self.center_x, self.center_y)
+    
+    # Use settings for all dimensions
+    inner_radius = self.settings.size * 0.6
+    glow_radius = self.settings.size * 0.9
+    
+    # 1. Drop Shadow (simulated)
+    painter.setPen(Qt.PenStyle.NoPen)
+    painter.setBrush(QColor(0, 0, 0, 100))
+    painter.drawEllipse(c + QPointF(2, 2), inner_radius * 0.85, inner_radius * 0.85)  
+    # 2. Outer Glow (Semi-transparent ring) - optional
+    if self.settings.show_glow:
+        glow_color = QColor(self.marker_color)
+        glow_color.setAlpha(60)
+        painter.setBrush(glow_color)
+        painter.drawEllipse(c, glow_radius, glow_radius)
+    
+    # 3. Main Ring (White border, Colored fill)
+    painter.setPen(QPen(QColor(255, 255, 255), self.settings.border_width))
+    painter.setBrush(self.marker_color)
+    painter.drawEllipse(c, inner_radius, inner_radius)
+    
+    # 4. Number
+    painter.setFont(QFont("Segoe UI", self.settings.number_size, QFont.Weight.Bold))
+    painter.setPen(QPen(QColor(255, 255, 255), 1))
+    
+    # Draw text centered
+    font_metrics = painter.fontMetrics()
+    text_w = font_metrics.horizontalAdvance(str(self.number))
+    text_h = font_metrics.capHeight()
+    
+    pos_point = QPointF(c.x() - text_w/2, c.y() + text_h/2)
+    painter.drawText(pos_point, str(self.number))
+    
+    # 5. Selection Ring
+    if self.isSelected():
+        painter.setPen(QPen(QColor(255, 255, 255), 2, Qt.PenStyle.DashLine))
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawEllipse(c, self.settings.size * 1.05, self.settings.size * 1.05)
+
+
+# STEP 2: Add Settings button to ProEditor toolbar (around line 1416)
+# Add after line 1416 (after btn_crop):
+
+btn_marker_settings = QPushButton("⚙️ Marker")
+btn_marker_settings.setToolTip("Klickmarker-Einstellungen")
+btn_marker_settings.clicked.connect(self.open_marker_settings)
+toolbar.addWidget(btn_marker_settings)
+
+
+# STEP 3: Add open_marker_settings method to ProEditor class (around line 1700):
+
+def open_marker_settings(self):
+    """Open click marker settings dialog"""
+    from marker_settings_dialog import ClickMarkerSettingsDialog
+    dialog = ClickMarkerSettingsDialog(self)
+    if dialog.exec():
+        # Refresh all markers
+        for item in self.scene.items():
+            if hasattr(item, 'item_type') and item.item_type == 'click':
+                item.prepareGeometryChange()
+                item.update()
+        self.statusBar().show Message("Marker-Einstellungen gespeichert!", 3000)
+
+
+# STEP 4: Update render_click_cv2 to use settings (around line 2720):
+
+def render_click_cv2(self, img, x, y, num):
+    settings = ClickMarkerSettings()
+    
+    # Use settings for rendering
+    radius = int(settings.size *0.6)
+    glow_radius = int(settings.size * 0.9)
+    
+    # Glow
+    if settings.show_glow:
+        col_bgr = (settings.color.blue(), settings.color.green(), settings.color.red())
+        cv2.circle(img, (x, y), glow_radius, col_bgr, -1, lineType=cv2.LINE_AA)
+    
+    # Main circle
+    col_bgr = (settings.color.blue(), settings.color.green(), settings.color.red())
+    cv2.circle(img, (x, y), radius, col_bgr, -1, lineType=cv2.LINE_AA)
+    cv2.circle(img, (x, y), radius, (255, 255, 255), settings.border_width, lineType=cv2.LINE_AA)
+    
+    # Number
+    font_scale = settings.number_size / 16.0
+    cv2.putText(img, str(num), (x-10, y+8), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255,255,255), 2, cv2.LINE_AA)
